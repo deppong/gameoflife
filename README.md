@@ -3,10 +3,12 @@ Game of Life written in C/SDL2
 
 
 ## build
-For windows, copy the lib and include directories to this directory 
-<br>
+Start by making the folder build with the command `mkdir build`
+
+For windows download and extract sdl2 for visual studio then copy the lib and include directories to this directory 
 
 For Linux you must install `cmake` and `libsdl2-dev`
+
 run the commands
 
 ```
@@ -20,5 +22,6 @@ afterwards run the following commands on either windows or linux:
 cmake -B build -S src
 cd build
 cmake --build .
-./Debug/gameoflife
 ```
+
+On windows, be sure the SDL2.dll is in the same directory as the executable. This file can be found in the lib directory

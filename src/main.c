@@ -9,20 +9,28 @@
 
 const int WIDTH  = 800;
 const int HEIGHT = 800;
-const int res    =  10;
+const int res    =  15;
+
+void to_cell_from_mouse(uint8_t *grid, int x, int y, int cols, int val) {
+    int cell_x = x>res?(x-res)/res+1:0;
+    int cell_y = y>res?(y-res)/res+1:0;
+    
+    grid[cell_x + cell_y*cols] = val;
+}
 
 int main(int argc, char**argv) {
     // Initialization -------------------- 
     int quit = 1;
     int pause = 1;
-    int drawing = 0;
-    SDL_Init(SDL_INIT_VIDEO);
+    float dt = 0.0f;
+    float sim_speed = 30.0f;
+    Uint64 last_time = SDL_GetTicks64();
+
+    struct mouse {
+        uint8_t drawing, erasing;
+    } mouse = {0, 0};
+    
     SDL_Event e;
-
-    srand(time(0));
-
-    SDL_Window *window = SDL_CreateWindow("Game of Life", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0);
-    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     const int cols = WIDTH/res;
     const int rows = HEIGHT/res;
@@ -33,6 +41,13 @@ int main(int argc, char**argv) {
         grid[i] = 0;
         next_grid[i] = 0;
     }
+
+    srand(time(0));
+    SDL_Init(SDL_INIT_VIDEO);
+
+    SDL_Window *window = SDL_CreateWindow("Game of Life", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WIDTH, HEIGHT, 0);
+    SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -45,27 +60,47 @@ int main(int argc, char**argv) {
         SDL_RenderClear(renderer);
 
         switch (e.type) {
+            int x = 0, y = 0;
             case SDL_QUIT: quit=0; break;
-            case SDL_MOUSEBUTTONDOWN: drawing = 1; break;
-            case SDL_MOUSEBUTTONUP:   drawing = 0; break;
-            case SDL_MOUSEMOTION:
-                if (drawing) {
-                    int x = e.button.x;
-                    int y = e.button.y;
-                    int cell_x = (x-res+1)/res+1;
-                    int cell_y = (y-res+1)/res+1;
-                    grid[cell_x + cell_y*cols] = 1;
+            case SDL_MOUSEBUTTONDOWN: 
+                x = e.button.x;
+                y = e.button.y;
+                if (e.button.button == SDL_BUTTON_LEFT) {
+                    mouse.drawing = 1;
+                    to_cell_from_mouse(grid, x, y, cols, 1);
+                } else {
+                    mouse.erasing = 1;
+                    to_cell_from_mouse(grid, x, y, cols, 0);
                 }
                 break;
+            case SDL_MOUSEBUTTONUP:   mouse.drawing = 0; mouse.erasing = 0;break;
+            case SDL_MOUSEMOTION:
+                x = e.button.x;
+                y = e.button.y;
+                if (mouse.drawing) {
+                    to_cell_from_mouse(grid, x, y, cols, 1);
+                } else if (mouse.erasing) {
+                    to_cell_from_mouse(grid, x, y, cols, 0);
+                }
+                break;
+
             case SDL_KEYDOWN:
                 switch (e.key.keysym.sym) {
-                    case SDLK_SPACE:
-                        pause = pause?0:1;
+                    case SDLK_SPACE:  pause=pause?0:1;  break;
+                    case SDLK_ESCAPE: quit=0;           break;
+                    case SDLK_UP:     sim_speed+=5.0f;  break;
+                    case SDLK_DOWN:   sim_speed = sim_speed<0.0f?1.0f:sim_speed-5.0f;  break;
+                    case SDLK_r:
+                        for (int i = 0; i < cols*rows; i++) {
+                            grid[i] = 0;
+                        }
                         break;
                     default:
                         break;
                 }break;
         }
+
+        Uint64 current_time = SDL_GetTicks64();
 
         // display each cell
         for (int i = 0; i < cols; i++) {
@@ -87,7 +122,9 @@ int main(int argc, char**argv) {
         }
 
         // update each cell
-        if (!pause) { 
+        dt = ((float)current_time - (float)last_time) / 1000.0f;
+
+        if (!pause && floor(dt / (1.0f / sim_speed)) > 0) { 
             for (int x = 0; x < cols; x++) {
                 for (int y = 0; y < rows; y++) {
 
@@ -111,7 +148,7 @@ int main(int argc, char**argv) {
                 grid[i] = next_grid[i];
             }
 
-            SDL_Delay(25);
+            last_time = current_time;
         }
 
 
