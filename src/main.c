@@ -14,7 +14,7 @@
 
 const int WIDTH  = 800;
 const int HEIGHT = 800;
-const int res    =  15;
+const int res    =  10;
 
 void to_cell_from_mouse(uint8_t *grid, int x, int y, int cols, int val) {
     int cell_x = x>res?(x-res)/res+1:0;
