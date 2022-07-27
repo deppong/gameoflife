@@ -24,7 +24,7 @@ int main(int argc, char**argv) {
     int pause = 1;
     float dt = 0.0f;
     float sim_speed = 30.0f;
-    Uint64 last_time = SDL_GetTicks64();
+    Uint32 last_time = SDL_GetTicks();
 
     struct mouse {
         uint8_t drawing, erasing;
@@ -100,7 +100,7 @@ int main(int argc, char**argv) {
                 }break;
         }
 
-        Uint64 current_time = SDL_GetTicks64();
+        Uint32 current_time = SDL_GetTicks32();
 
         // display each cell
         for (int i = 0; i < cols; i++) {
