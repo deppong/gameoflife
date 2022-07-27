@@ -3,7 +3,12 @@
     programmed in C/SDL2 by Isaiah Deppong
 
 */
-#include "SDL.h"
+#ifdef __unix__
+    #include <SDL2/SDL.h>
+#elif defined _WIN32
+    #include <SDL.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 
