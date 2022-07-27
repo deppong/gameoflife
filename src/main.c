@@ -100,7 +100,7 @@ int main(int argc, char**argv) {
                 }break;
         }
 
-        Uint32 current_time = SDL_GetTicks32();
+        Uint32 current_time = SDL_GetTicks();
 
         // display each cell
         for (int i = 0; i < cols; i++) {
